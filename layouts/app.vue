@@ -25,7 +25,9 @@ const logout = () => {
       </div>
     </header>
     <main class="flex-grow container mx-auto px-4 py-6">
-      <slot/>
+      <UContainer>
+        <slot/>
+      </UContainer>
     </main>
   </div>
 </template>
