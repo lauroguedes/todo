@@ -7,17 +7,46 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+
 const emit = defineEmits<{
   created: [];
 }>();
 
-// Reactive data
 const isLoading = ref(false);
+
 const newTask = ref<CreateTaskForm>({
   title: "",
   description: "",
   priority: TaskPriority.MEDIUM,
   labels: [],
+});
+
+const priorityItems = ref([
+  TaskPriority.HIGH,
+  TaskPriority.MEDIUM,
+  TaskPriority.LOW,
+]);
+
+const selectedLabels = computed({
+  get: () => {
+    return newTask.value.labels.map((labelId) => {
+      const label = props.availableLabels.find((l) => l.id === labelId);
+      return {
+        label: label?.name || "",
+        id: labelId,
+      };
+    });
+  },
+  set: (value: { label: string; id: number }[]) => {
+    newTask.value.labels = value.map((item) => item.id);
+  },
+});
+
+const labelItems = computed(() => {
+  return props.availableLabels.map((label) => ({
+    label: label.name,
+    id: label.id,
+  }));
 });
 
 const toast = useToast();
@@ -44,10 +73,9 @@ const createTask = async () => {
       title: "",
       description: "",
       priority: TaskPriority.MEDIUM,
-      labels: [],
+      labels: props.availableLabels.map((label) => label.id),
     };
 
-    // Emit success event to parent
     emit("created");
 
     toast.add({
@@ -67,52 +95,42 @@ const createTask = async () => {
 </script>
 
 <template>
-  <UCard class="mb-8">
+  <UCard class="mb-8" variant="subtle">
     <template #header>
       <h3 class="text-lg font-semibold">Create New Task</h3>
     </template>
 
     <form @submit.prevent="createTask" class="space-y-4">
-      <UFormGroup label="Title" required>
-        <UInput
-          v-model="newTask.title"
-          placeholder="Enter task title"
-          required
-        />
-      </UFormGroup>
+      <div class="grid grid-cols-5 gap-2">
+        <UFormField class="col-span-3" name="title" required>
+          <UInput
+            class="w-full"
+            icon="i-lucide-circle-check-big"
+            placeholder="Title"
+            v-model="newTask.title"
+          />
+        </UFormField>
 
-      <UFormGroup label="Description">
-        <UTextarea
-          v-model="newTask.description"
-          placeholder="Enter task description"
-          :rows="3"
-        />
-      </UFormGroup>
+        <UFormField name="priority">
+          <USelect
+            class="w-full"
+            icon="i-lucide-arrow-up-wide-narrow"
+            placeholder="Priority"
+            v-model="newTask.priority"
+            :items="priorityItems"
+          />
+        </UFormField>
 
-      <UFormGroup label="Priority">
-        <USelect
-          v-model="newTask.priority"
-          :options="[
-            { label: 'High', value: TaskPriority.HIGH },
-            { label: 'Medium', value: TaskPriority.MEDIUM },
-            { label: 'Low', value: TaskPriority.LOW },
-          ]"
-        />
-      </UFormGroup>
-
-      <UFormGroup label="Labels">
-        <USelect
-          v-model="newTask.labels"
-          :options="
-            availableLabels.map((label) => ({
-              label: label.name,
-              value: label.id,
-            }))
-          "
-          multiple
-          placeholder="Select labels"
-        />
-      </UFormGroup>
+        <UFormField name="labels">
+          <UInputMenu
+            class="w-full"
+            icon="i-lucide-tags"
+            v-model="selectedLabels"
+            multiple
+            :items="labelItems"
+          />
+        </UFormField>
+      </div>
 
       <div class="flex justify-end">
         <UButton
