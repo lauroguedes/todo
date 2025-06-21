@@ -19,7 +19,6 @@ const {
 } = useSanctumFetch<{ data: Task[] }>("/api/tasks");
 const tasks = computed<Task[]>(() => tasksData.value?.data || []);
 
-// Methods
 const toggleTaskCompletion = async (task: Task) => {
   try {
     await useSanctumFetch(`/api/tasks/${task.id}`, {
