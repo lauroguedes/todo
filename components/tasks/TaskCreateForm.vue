@@ -18,13 +18,15 @@ const newTask = ref<CreateTaskForm>({
   title: "",
   description: "",
   priority: TaskPriority.MEDIUM,
+  parent_id: null,
+  is_completed: false,
   labels: [],
 });
 
 const priorityItems = ref([
-  TaskPriority.HIGH,
-  TaskPriority.MEDIUM,
-  TaskPriority.LOW,
+  { id: TaskPriority.HIGH, label: "High" },
+  { id: TaskPriority.MEDIUM, label: "Medium" },
+  { id: TaskPriority.LOW, label: "Low" },
 ]);
 
 const selectedLabels = computed({
@@ -68,12 +70,13 @@ const createTask = async () => {
       body: newTask.value,
     });
 
-    // Reset form
     newTask.value = {
       title: "",
       description: "",
       priority: TaskPriority.MEDIUM,
-      labels: props.availableLabels.map((label) => label.id),
+      parent_id: null,
+      is_completed: false,
+      labels: [],
     };
 
     emit("created");
@@ -118,6 +121,7 @@ const createTask = async () => {
             placeholder="Priority"
             v-model="newTask.priority"
             :items="priorityItems"
+            value-key="id"
           />
         </UFormField>
 

@@ -1,30 +1,22 @@
 <script setup lang="ts">
-import { TaskPriority } from "~/types/task";
-import type { Task, CreateTaskForm } from "~/types/task";
+import type { Task, Label } from "~/types/task";
 
 definePageMeta({
   layout: "app",
+  middleware: ["sanctum:auth"],
 });
 
-// Available labels for selection
-const availableLabels = ref([
-  { id: 1, name: "Personal" },
-  { id: 2, name: "Work" },
-  { id: 3, name: "Shopping" },
-  { id: 4, name: "Health" },
-  { id: 5, name: "Education" },
-]);
+const toast = useToast();
 
-// Data fetching
+const { data: labelsData } = useSanctumFetch<{ data: Label[] }>("/api/labels");
+const availableLabels = computed<Label[]>(() => labelsData.value?.data || []);
+
 const {
   data: tasksData,
   pending,
   error,
   refresh,
 } = useSanctumFetch<{ data: Task[] }>("/api/tasks");
-const toast = useToast();
-
-// Computed properties
 const tasks = computed<Task[]>(() => tasksData.value?.data || []);
 
 // Methods

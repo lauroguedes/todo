@@ -1,7 +1,7 @@
 export enum TaskPriority {
-  HIGH = "high",
-  MEDIUM = "medium",
-  LOW = "low",
+  HIGH = 1,
+  MEDIUM = 2,
+  LOW = 3,
 }
 
 export interface Label {
@@ -23,5 +23,7 @@ export interface CreateTaskForm {
   title: string;
   description: string;
   priority: TaskPriority;
+  is_completed: boolean;
+  parent_id?: number | null;
   labels: number[];
 }
