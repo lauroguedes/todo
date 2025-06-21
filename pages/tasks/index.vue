@@ -76,6 +76,35 @@ const deleteTask = async (id: Task["id"]) => {
     });
   }
 };
+
+const createSubtask = async ({
+  parentId,
+  title,
+}: {
+  parentId: number;
+  title: string;
+}) => {
+  try {
+    await useSanctumFetch("/api/tasks", {
+      method: "POST",
+      body: {
+        title,
+        parent_id: parentId,
+      },
+    });
+    await refresh();
+    toast.add({
+      title: "Success",
+      description: "Subtask created successfully",
+    });
+  } catch (e) {
+    toast.add({
+      title: "Error",
+      description: "Failed to create subtask",
+      color: "error",
+    });
+  }
+};
 </script>
 
 <template>
@@ -120,6 +149,7 @@ const deleteTask = async (id: Task["id"]) => {
       @toggle-completion="toggleTaskCompletion"
       @delete="deleteTask"
       @edit="handleEditTask"
+      @create-subtask="createSubtask"
     />
   </div>
 </template>

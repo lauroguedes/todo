@@ -11,6 +11,7 @@ const emit = defineEmits<{
   toggleCompletion: [task: Task];
   delete: [id: number];
   edit: [task: Task];
+  createSubtask: [payload: { parentId: number; title: string }];
 }>();
 
 const toast = useToast();
@@ -68,6 +69,7 @@ const deleteTask = async (id: Task["id"]) => {
           @toggleCompletion="toggleTaskCompletion"
           @delete="deleteTask"
           @edit="editTask"
+          @create-subtask="(payload) => emit('createSubtask', payload)"
         />
       </div>
     </div>
@@ -86,6 +88,7 @@ const deleteTask = async (id: Task["id"]) => {
           @toggleCompletion="toggleTaskCompletion"
           @delete="deleteTask"
           @edit="editTask"
+          @create-subtask="(payload) => emit('createSubtask', payload)"
         />
       </div>
     </div>
