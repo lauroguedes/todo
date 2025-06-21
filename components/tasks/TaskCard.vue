@@ -56,20 +56,14 @@ const getPriorityIcon = (priority: TaskPriority | string) => {
         <div class="flex-1 min-w-0 space-y-2">
           <h3
             class="font-medium text-lg truncate"
-            :class="
-              completed ? 'text-gray-900 dark:text-white line-through' : ''
-            "
+            :class="completed ? 'line-through' : ''"
           >
             {{ task.title }}
           </h3>
           <p
             v-if="task.description"
             class="text-sm opacity-80 line-clamp-2"
-            :class="
-              completed
-                ? 'text-gray-600 dark:text-gray-400 mt-1 line-through'
-                : ''
-            "
+            :class="completed ? 'mt-1 line-through' : ''"
           >
             {{ task.description }}
           </p>

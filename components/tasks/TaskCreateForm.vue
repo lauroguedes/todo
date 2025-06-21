@@ -142,15 +142,6 @@ const handleError = (error: any, isEditing: boolean) => {
 };
 
 const createOrUpdateTask = async () => {
-  if (!newTask.value.title.trim()) {
-    toast.add({
-      title: "Error",
-      description: "Task title is required",
-      color: "error",
-    });
-    return;
-  }
-
   isLoading.value = true;
 
   const { url, method, isEditing } = getRequestConfig();
