@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { TaskPriority } from "~/types/task";
 import type { Task } from "~/types/task";
 import TaskCard from "./TaskCard.vue";
 
@@ -11,6 +10,7 @@ const props = defineProps<Props>();
 const emit = defineEmits<{
   toggleCompletion: [task: Task];
   delete: [id: number];
+  edit: [task: Task];
 }>();
 
 const toast = useToast();
@@ -22,6 +22,10 @@ const completedTasks = computed(() =>
 const pendingTasks = computed(() =>
   props.tasks.filter((task) => !task.is_completed)
 );
+
+const editTask = (task: Task) => {
+  emit("edit", task);
+};
 
 const toggleTaskCompletion = async (task: Task) => {
   try {
@@ -46,32 +50,6 @@ const deleteTask = async (id: Task["id"]) => {
     });
   }
 };
-
-const getPriorityColor = (priority: TaskPriority) => {
-  switch (String(priority).toLowerCase()) {
-    case "high":
-      return "error";
-    case "medium":
-      return "warning";
-    case "low":
-      return "success";
-    default:
-      return "secondary";
-  }
-};
-
-const getPriorityIcon = (priority: TaskPriority) => {
-  switch (String(priority).toLowerCase()) {
-    case "high":
-      return "i-lucide-alert-triangle";
-    case "medium":
-      return "i-lucide-minus-circle";
-    case "low":
-      return "i-lucide-check-circle";
-    default:
-      return "i-lucide-circle";
-  }
-};
 </script>
 
 <template>
@@ -89,6 +67,7 @@ const getPriorityIcon = (priority: TaskPriority) => {
           :completed="false"
           @toggleCompletion="toggleTaskCompletion"
           @delete="deleteTask"
+          @edit="editTask"
         />
       </div>
     </div>
@@ -106,6 +85,7 @@ const getPriorityIcon = (priority: TaskPriority) => {
           :completed="true"
           @toggleCompletion="toggleTaskCompletion"
           @delete="deleteTask"
+          @edit="editTask"
         />
       </div>
     </div>

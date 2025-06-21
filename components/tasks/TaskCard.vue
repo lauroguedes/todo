@@ -13,7 +13,7 @@ const emit = defineEmits<{
   (e: "edit", task: Task): void;
 }>();
 
-const getPriorityColor = (priority: TaskPriority) => {
+const getPriorityColor = (priority: TaskPriority | string) => {
   switch (String(priority).toLowerCase()) {
     case "high":
       return "error";
@@ -26,7 +26,7 @@ const getPriorityColor = (priority: TaskPriority) => {
   }
 };
 
-const getPriorityIcon = (priority: TaskPriority) => {
+const getPriorityIcon = (priority: TaskPriority | string) => {
   switch (String(priority).toLowerCase()) {
     case "high":
       return "i-lucide-alert-triangle";
@@ -50,7 +50,7 @@ const getPriorityIcon = (priority: TaskPriority) => {
       <div class="flex items-start gap-3 flex-1">
         <UCheckbox
           :model-value="task.is_completed"
-          @update:model-value="$emit('toggleCompletion', task)"
+          @update:model-value="emit('toggleCompletion', task)"
           class="mt-1"
         />
         <div class="flex-1 min-w-0 space-y-2">
@@ -83,25 +83,17 @@ const getPriorityIcon = (priority: TaskPriority) => {
             >
               {{ label.name }}
             </UBadge>
-            <UBadge
-              :color="getPriorityColor(task.priority)"
-              size="sm"
-              class="flex items-center gap-1"
-            >
-              <UIcon :name="getPriorityIcon(task.priority)" class="w-3 h-3" />
-              {{ task.priority }}
-            </UBadge>
           </div>
         </div>
       </div>
       <div class="flex items-center self-center gap-1">
         <UButton
           icon="i-lucide-edit"
-          color="neutral"
+          color="primary"
           variant="ghost"
           size="sm"
           title="Edit task"
-          @click="$emit('edit', task)"
+          @click="emit('edit', task)"
         />
         <UButton
           icon="i-lucide-trash-2"
@@ -109,7 +101,7 @@ const getPriorityIcon = (priority: TaskPriority) => {
           variant="ghost"
           size="sm"
           title="Delete task"
-          @click="$emit('delete', task.id)"
+          @click="emit('delete', task.id)"
         />
       </div>
     </div>

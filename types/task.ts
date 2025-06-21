@@ -13,7 +13,7 @@ export interface Task {
   id: number;
   title: string;
   description?: string;
-  priority: TaskPriority;
+  priority: TaskPriority | string;
   is_completed: boolean;
   children?: Task[];
   labels?: Label[];

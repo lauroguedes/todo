@@ -10,6 +10,7 @@ const toast = useToast();
 
 const { data: labelsData } = useSanctumFetch<{ data: Label[] }>("/api/labels");
 const availableLabels = computed<Label[]>(() => labelsData.value?.data || []);
+const taskToEdit = ref<Task | null>(null);
 
 const {
   data: tasksData,
@@ -18,6 +19,16 @@ const {
   refresh,
 } = useSanctumFetch<{ data: Task[] }>("/api/tasks");
 const tasks = computed<Task[]>(() => tasksData.value?.data || []);
+
+const handleEditTask = (task: Task) => {
+  taskToEdit.value = task;
+  window.scrollTo({ top: 0, behavior: "smooth" });
+};
+
+const resetForm = () => {
+  taskToEdit.value = null;
+  refresh();
+};
 
 const toggleTaskCompletion = async (task: Task) => {
   try {
@@ -81,13 +92,13 @@ const deleteTask = async (id: Task["id"]) => {
       </div>
     </div>
 
-    <!-- Create Task Form -->
     <TasksTaskCreateForm
       :available-labels="availableLabels"
+      :task-to-edit="taskToEdit"
       @created="refresh"
+      @updated="resetForm"
     />
 
-    <!-- Loading State -->
     <div v-if="pending" class="flex justify-center items-center py-12">
       <UIcon
         name="i-lucide-loader-2"
@@ -95,7 +106,6 @@ const deleteTask = async (id: Task["id"]) => {
       />
     </div>
 
-    <!-- Error State -->
     <UAlert
       v-else-if="error"
       title="Error"
@@ -104,12 +114,12 @@ const deleteTask = async (id: Task["id"]) => {
       icon="i-lucide-alert-circle"
     />
 
-    <!-- Tasks List -->
     <TasksTaskList
       v-else
       :tasks="tasks"
       @toggle-completion="toggleTaskCompletion"
       @delete="deleteTask"
+      @edit="handleEditTask"
     />
   </div>
 </template>

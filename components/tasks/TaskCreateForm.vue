@@ -1,18 +1,23 @@
 <script setup lang="ts">
 import { TaskPriority } from "~/types/task";
-import type { Label, CreateTaskForm } from "~/types/task";
+import type { Label, CreateTaskForm, Task } from "~/types/task";
+import { watch } from "vue";
 
 interface Props {
   availableLabels: Label[];
+  taskToEdit?: Task | null;
 }
 
 const props = defineProps<Props>();
 
 const emit = defineEmits<{
   created: [];
+  updated: [];
 }>();
 
 const isLoading = ref(false);
+
+const isEditMode = computed(() => !!props.taskToEdit);
 
 const newTask = ref<CreateTaskForm>({
   title: "",
@@ -23,10 +28,40 @@ const newTask = ref<CreateTaskForm>({
   labels: [],
 });
 
+watch(
+  () => props.taskToEdit,
+  (task) => {
+    if (!task) {
+      newTask.value = {
+        title: "",
+        description: "",
+        priority: TaskPriority.MEDIUM,
+        parent_id: null,
+        is_completed: false,
+        labels: [],
+      };
+
+      return;
+    }
+
+    newTask.value = {
+      title: task.title || "",
+      description: task.description || "",
+      priority:
+        priorityItems.value.find((p) => p.label === task.priority)?.id ??
+        TaskPriority.MEDIUM,
+      parent_id: null,
+      is_completed: task.is_completed ?? false,
+      labels: task.labels?.map((l: Label) => l.id) || [],
+    };
+  },
+  { immediate: true }
+);
+
 const priorityItems = ref([
-  { id: TaskPriority.HIGH, label: "High" },
-  { id: TaskPriority.MEDIUM, label: "Medium" },
-  { id: TaskPriority.LOW, label: "Low" },
+  { id: TaskPriority.HIGH, label: "high" },
+  { id: TaskPriority.MEDIUM, label: "medium" },
+  { id: TaskPriority.LOW, label: "low" },
 ]);
 
 const selectedLabels = computed({
@@ -53,7 +88,60 @@ const labelItems = computed(() => {
 
 const toast = useToast();
 
-const createTask = async () => {
+const getRequestConfig = () => {
+  const task = props.taskToEdit;
+
+  if (isEditMode.value && task) {
+    return {
+      url: `/api/tasks/${task.id}`,
+      method: "PATCH" as const,
+      isEditing: true,
+    };
+  }
+
+  return {
+    url: "/api/tasks",
+    method: "POST" as const,
+    isEditing: false,
+  };
+};
+
+const handleSuccess = (isEditing: boolean) => {
+  toast.add({
+    title: "Success",
+    description: isEditing
+      ? "Task updated successfully"
+      : "Task created successfully",
+  });
+
+  if (!isEditing) {
+    emit("created");
+    newTask.value = {
+      title: "",
+      description: "",
+      priority: TaskPriority.MEDIUM,
+      parent_id: null,
+      is_completed: false,
+      labels: [],
+    };
+
+    return;
+  }
+
+  emit("updated");
+};
+
+const handleError = (error: any, isEditing: boolean) => {
+  toast.add({
+    title: "Error",
+    description:
+      error?.data?.message ||
+      (isEditing ? "Failed to update task" : "Failed to create task"),
+    color: "error",
+  });
+};
+
+const createOrUpdateTask = async () => {
   if (!newTask.value.title.trim()) {
     toast.add({
       title: "Error",
@@ -64,46 +152,29 @@ const createTask = async () => {
   }
 
   isLoading.value = true;
-  try {
-    await useSanctumFetch("/api/tasks", {
-      method: "POST",
-      body: newTask.value,
-    });
 
-    newTask.value = {
-      title: "",
-      description: "",
-      priority: TaskPriority.MEDIUM,
-      parent_id: null,
-      is_completed: false,
-      labels: [],
-    };
+  const { url, method, isEditing } = getRequestConfig();
 
-    emit("created");
+  const { error } = await useSanctumFetch(url, {
+    method,
+    body: newTask.value,
+  });
 
-    toast.add({
-      title: "Success",
-      description: "Task created successfully",
-    });
-  } catch (e) {
-    toast.add({
-      title: "Error",
-      description: "Failed to create task",
-      color: "error",
-    });
-  } finally {
-    isLoading.value = false;
-  }
+  error.value ? handleError(error.value, isEditing) : handleSuccess(isEditing);
+
+  isLoading.value = false;
 };
 </script>
 
 <template>
   <UCard class="mb-8" variant="subtle">
     <template #header>
-      <h3 class="text-lg font-semibold">Create New Task</h3>
+      <h3 class="text-lg font-semibold">
+        {{ isEditMode ? "Edit Task" : "Create New Task" }}
+      </h3>
     </template>
 
-    <form @submit.prevent="createTask" class="space-y-4">
+    <form @submit.prevent="createOrUpdateTask" class="space-y-4">
       <div class="grid grid-cols-5 gap-2">
         <UFormField class="col-span-3" name="title" required>
           <UInput
@@ -143,7 +214,7 @@ const createTask = async () => {
           :loading="isLoading"
           icon="i-lucide-plus"
         >
-          Create Task
+          {{ isEditMode ? "Update Task" : "Create Task" }}
         </UButton>
       </div>
     </form>
