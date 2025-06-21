@@ -6,7 +6,7 @@ interface Props {
   completed?: boolean;
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
 const emit = defineEmits<{
   (e: "toggleCompletion", task: Task): void;
   (e: "delete", id: number): void;
@@ -48,18 +48,21 @@ const getPriorityIcon = (priority: TaskPriority | string) => {
   >
     <div class="flex items-start justify-between gap-4">
       <div class="flex items-start gap-3 flex-1">
-        <UCheckbox
-          :model-value="task.is_completed"
-          @update:model-value="emit('toggleCompletion', task)"
-          class="mt-1"
-        />
         <div class="flex-1 min-w-0 space-y-2">
-          <h3
-            class="font-medium text-lg truncate"
-            :class="completed ? 'line-through' : ''"
-          >
-            {{ task.title }}
-          </h3>
+          <div class="flex items-center gap-2">
+            <UCheckbox
+              :model-value="Boolean(task.is_completed)"
+              @update:model-value="emit('toggleCompletion', task)"
+              size="xl"
+            />
+            <h3
+              class="font-medium text-lg truncate"
+              :class="completed ? 'line-through' : ''"
+            >
+              {{ task.title }}
+            </h3>
+          </div>
+
           <p
             v-if="task.description"
             class="text-sm opacity-80 line-clamp-2"
