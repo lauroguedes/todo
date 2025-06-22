@@ -122,6 +122,7 @@ const getPriorityIcon = (priority: TaskPriority | string) => {
             @click="showChildren = !showChildren"
           />
           <UButton
+            v-if="!completed"
             icon="i-lucide-plus"
             color="primary"
             variant="ghost"
@@ -130,6 +131,7 @@ const getPriorityIcon = (priority: TaskPriority | string) => {
             @click="isAddingSubtask = !isAddingSubtask"
           />
           <UButton
+            v-if="!completed"
             icon="i-lucide-edit"
             color="primary"
             variant="ghost"
@@ -204,6 +206,7 @@ const getPriorityIcon = (priority: TaskPriority | string) => {
       <div class="flex items-center justify-between gap-2">
         <div class="flex items-center gap-2 flex-1">
           <UCheckbox
+            :disabled="completed"
             :model-value="Boolean(task.is_completed)"
             @update:model-value="emit('toggleCompletion', task)"
           />
@@ -224,6 +227,7 @@ const getPriorityIcon = (priority: TaskPriority | string) => {
             @click="showChildren = !showChildren"
           />
           <UButton
+            v-if="!completed"
             icon="i-lucide-plus"
             color="primary"
             variant="ghost"

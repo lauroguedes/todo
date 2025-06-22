@@ -94,7 +94,6 @@ const deleteTask = async (id: Task["id"]) => {
     </div>
   </div>
 
-  <!-- Empty State -->
   <UCard v-else class="text-center py-12">
     <UIcon
       name="i-lucide-clipboard-list"
