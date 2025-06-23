@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Task, Label } from "~/types/task";
 import { useTasks } from "~/composables/useTasks";
+import TasksTaskEditForm from "~/components/tasks/TaskEditForm.vue";
 
 definePageMeta({
   layout: "app",
@@ -106,11 +107,16 @@ const handleCreateSubtask = async ({
       </div>
     </div>
 
-    <TasksTaskCreateForm
+    <TasksTaskEditForm
+      v-if="taskToEdit"
       :available-labels="availableLabels"
-      :task-to-edit="taskToEdit"
-      @created="resetForm"
+      :task="taskToEdit"
       @updated="resetForm"
+    />
+    <TasksTaskCreateForm
+      v-else
+      :available-labels="availableLabels"
+      @created="resetForm"
     />
 
     <div v-if="loading" class="flex justify-center items-center py-12">
