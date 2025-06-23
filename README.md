@@ -1,4 +1,4 @@
-# Todo App – Nuxt Front-End Assessment
+# ToDo App – Nuxt Front-End Assessment
 
 This project is the front-end portion of a technical assessment for a Software Engineer position. It demonstrates proficiency in building a modern, maintainable, and user-friendly task management interface using Nuxt 3 and related technologies.
 
