@@ -158,6 +158,14 @@ const getPriorityIcon = (priority: TaskPriority | string) => {
       >
         {{ task.priority }}
       </UBadge>
+      <UBadge
+        color="neutral"
+        variant="soft"
+        size="xs"
+        class="absolute right-1 bottom-1 opacity-70"
+      >
+        {{ task.created_at }}
+      </UBadge>
 
       <div v-if="isAddingSubtask" class="mt-4 flex items-center gap-2">
         <UInput

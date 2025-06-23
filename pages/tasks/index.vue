@@ -31,29 +31,30 @@ const resetForm = () => {
 };
 
 const toggleTaskCompletion = async (task: Task) => {
-  try {
-    await useSanctumFetch(`/api/tasks/${task.id}`, {
-      method: "PATCH",
-      body: {
-        is_completed: !task.is_completed,
-      },
-    });
+  const { error } = await useSanctumFetch(`/api/tasks/${task.id}`, {
+    method: "PATCH",
+    body: {
+      is_completed: !task.is_completed,
+    },
+  });
 
-    await refresh();
-
-    toast.add({
-      title: "Success",
-      description: `Task ${
-        task.is_completed ? "unmarked" : "marked"
-      } as completed`,
-    });
-  } catch (e) {
+  if (error.value) {
     toast.add({
       title: "Error",
-      description: "Failed to update task",
+      description: error.value?.data?.message || "Operation Failed",
       color: "error",
     });
+    return;
   }
+
+  await refresh();
+
+  toast.add({
+    title: "Success",
+    description: `Task ${
+      task.is_completed ? "marked" : "unmarked"
+    } as completed`,
+  });
 };
 
 const deleteTask = async (id: Task["id"]) => {

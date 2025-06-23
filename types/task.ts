@@ -17,6 +17,7 @@ export interface Task {
   is_completed: boolean;
   children?: Task[];
   labels?: Label[];
+  created_at: string;
 }
 
 export interface CreateTaskForm {
