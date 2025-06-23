@@ -25,6 +25,23 @@ const handleEditTask = (task: Task) => {
   window.scrollTo({ top: 0, behavior: "smooth" });
 };
 
+const handleError = (error: string) => {
+  toast.add({
+    title: "Error",
+    description: error || "Operation Failed",
+    color: "error",
+  });
+};
+
+const handleSuccess = (message: string) => {
+  toast.add({
+    title: "Success",
+    description: message,
+  });
+
+  refresh();
+};
+
 const resetForm = () => {
   taskToEdit.value = null;
   refresh();
@@ -38,44 +55,23 @@ const toggleTaskCompletion = async (task: Task) => {
     },
   });
 
-  if (error.value) {
-    toast.add({
-      title: "Error",
-      description: error.value?.data?.message || "Operation Failed",
-      color: "error",
-    });
-    return;
-  }
-
-  await refresh();
-
-  toast.add({
-    title: "Success",
-    description: `Task ${
-      task.is_completed ? "marked" : "unmarked"
-    } as completed`,
-  });
+  error.value
+    ? handleError(error.value?.data?.message || "Operation Failed")
+    : handleSuccess(
+        `Task ${task.title} was ${
+          task.is_completed ? "marked" : "unmarked"
+        } as completed`
+      );
 };
 
 const deleteTask = async (id: Task["id"]) => {
-  try {
-    await useSanctumFetch(`/api/tasks/${id}`, {
-      method: "DELETE",
-    });
+  const { error } = await useSanctumFetch(`/api/tasks/${id}`, {
+    method: "DELETE",
+  });
 
-    await refresh();
-
-    toast.add({
-      title: "Success",
-      description: "Task deleted successfully",
-    });
-  } catch (e) {
-    toast.add({
-      title: "Error",
-      description: "Failed to delete task",
-      color: "error",
-    });
-  }
+  error.value
+    ? handleError(error.value?.data?.message || "Operation Failed")
+    : handleSuccess("Task deleted successfully");
 };
 
 const createSubtask = async ({
@@ -85,26 +81,17 @@ const createSubtask = async ({
   parentId: number;
   title: string;
 }) => {
-  try {
-    await useSanctumFetch("/api/tasks", {
-      method: "POST",
-      body: {
-        title,
-        parent_id: parentId,
-      },
-    });
-    await refresh();
-    toast.add({
-      title: "Success",
-      description: "Subtask created successfully",
-    });
-  } catch (e) {
-    toast.add({
-      title: "Error",
-      description: "Failed to create subtask",
-      color: "error",
-    });
-  }
+  const { error } = await useSanctumFetch("/api/tasks", {
+    method: "POST",
+    body: {
+      title,
+      parent_id: parentId,
+    },
+  });
+
+  error.value
+    ? handleError(error.value?.data?.message || "Operation Failed")
+    : handleSuccess(`Subtask ${title} was created successfully`);
 };
 </script>
 
