@@ -2,11 +2,7 @@
 
 This project is the front-end portion of a technical assessment for a Software Engineer position. It demonstrates proficiency in building a modern, maintainable, and user-friendly task management interface using Nuxt 3 and related technologies.
 
-
-
-https://github.com/user-attachments/assets/a9de07bd-8d23-4d1b-a8bf-460286819ba0
-
-
+https://github.com/user-attachments/assets/cfb073f0-5a28-42be-b264-691fcd40f937
 
 ## Project Purpose
 
