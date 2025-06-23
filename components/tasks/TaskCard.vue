@@ -80,6 +80,7 @@ const getPriorityIcon = (priority: TaskPriority | string) => {
                 :model-value="Boolean(task.is_completed)"
                 @update:model-value="emit('toggleCompletion', task)"
                 size="xl"
+                class="hover:opacity-70"
               />
               <h3
                 class="font-medium text-lg truncate"
@@ -216,6 +217,7 @@ const getPriorityIcon = (priority: TaskPriority | string) => {
           <UCheckbox
             :model-value="Boolean(task.is_completed)"
             @update:model-value="emit('toggleCompletion', task)"
+            class="hover:opacity-70"
           />
           <span :class="completed ? 'line-through' : ''" class="flex-1">{{
             task.title

@@ -146,7 +146,7 @@ const createOrUpdateTask = async () => {
 
   const { url, method, isEditing } = getRequestConfig();
 
-  const { error } = await useSanctumFetch(url, {
+  const { error, pending } = await useSanctumFetch(url, {
     method,
     body: newTask.value,
   });
