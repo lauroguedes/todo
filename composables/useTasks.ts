@@ -23,7 +23,59 @@ export const useTasks = () => {
     loading.value = false;
   };
 
-  // Add a new task
+  // Helper: recursively find and update a task by id
+  function updateTaskInTree(
+    tasksArr: Task[],
+    id: number,
+    updater: (task: Task) => void
+  ) {
+    for (const task of tasksArr) {
+      if (task.id === id) {
+        updater(task);
+        return true;
+      }
+      if (task.children && updateTaskInTree(task.children, id, updater)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // Helper: recursively find and delete a task by id
+  function deleteTaskInTree(tasksArr: Task[], id: number): boolean {
+    const idx = tasksArr.findIndex((t) => t.id === id);
+    if (idx !== -1) {
+      tasksArr.splice(idx, 1);
+      return true;
+    }
+    for (const task of tasksArr) {
+      if (task.children && deleteTaskInTree(task.children, id)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // Helper: recursively find a parent by id and add a child
+  function addSubtaskInTree(
+    tasksArr: Task[],
+    parentId: number,
+    subtask: Task
+  ): boolean {
+    for (const task of tasksArr) {
+      if (task.id === parentId) {
+        if (!task.children) task.children = [];
+        task.children.unshift(subtask);
+        return true;
+      }
+      if (task.children && addSubtaskInTree(task.children, parentId, subtask)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // Add a new task (top-level only)
   const addTask = async (taskData: Partial<Task>) => {
     const { data, error: addError } = await useSanctumFetch<{ data: Task }>(
       "/api/tasks",
@@ -35,12 +87,21 @@ export const useTasks = () => {
     if (addError.value) {
       throw (addError.value as any)?.data?.message || "Failed to add task";
     }
-    if (data.value?.data) {
-      tasks.value.unshift(data.value.data);
+    if (data.value && data.value.data) {
+      // If parent_id is present, add as subtask
+      if ((taskData as any).parent_id) {
+        addSubtaskInTree(
+          tasks.value,
+          (taskData as any).parent_id as number,
+          data.value.data
+        );
+      } else {
+        tasks.value.unshift(data.value.data);
+      }
     }
   };
 
-  // Update an existing task
+  // Update an existing task (deep)
   const updateTask = async (id: number, updates: Partial<Task>) => {
     const { data, error: updateError } = await useSanctumFetch<{ data: Task }>(
       `/api/tasks/${id}`,
@@ -55,13 +116,13 @@ export const useTasks = () => {
       );
     }
     if (data.value?.data) {
-      const idx = tasks.value.findIndex((t) => t.id === id);
-      if (idx !== -1)
-        tasks.value[idx] = { ...tasks.value[idx], ...data.value.data };
+      updateTaskInTree(tasks.value, id, (task) => {
+        Object.assign(task, data.value.data);
+      });
     }
   };
 
-  // Delete a task
+  // Delete a task (deep)
   const deleteTask = async (id: number) => {
     const { error: deleteError } = await useSanctumFetch(`/api/tasks/${id}`, {
       method: "DELETE",
@@ -71,15 +132,15 @@ export const useTasks = () => {
         (deleteError.value as any)?.data?.message || "Failed to delete task"
       );
     }
-    tasks.value = tasks.value.filter((t) => t.id !== id);
+    deleteTaskInTree(tasks.value, id);
   };
 
-  // Toggle completion
+  // Toggle completion (deep)
   const toggleTaskCompletion = async (task: Task) => {
     await updateTask(task.id, { is_completed: !task.is_completed });
   };
 
-  // Create subtask
+  // Create subtask (deep)
   const createSubtask = async (parentId: number, title: string) => {
     const { data, error: subtaskError } = await useSanctumFetch<{ data: Task }>(
       "/api/tasks",
@@ -94,12 +155,7 @@ export const useTasks = () => {
       );
     }
     if (data.value?.data) {
-      // Insert subtask into parent's children
-      const parent = tasks.value.find((t) => t.id === parentId);
-      if (parent) {
-        if (!parent.children) parent.children = [];
-        parent.children.unshift(data.value.data);
-      }
+      addSubtaskInTree(tasks.value, parentId, data.value.data);
     }
   };
 

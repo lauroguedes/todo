@@ -109,7 +109,7 @@ const handleCreateSubtask = async ({
     <TasksTaskCreateForm
       :available-labels="availableLabels"
       :task-to-edit="taskToEdit"
-      @created="fetchTasks"
+      @created="resetForm"
       @updated="resetForm"
     />
 

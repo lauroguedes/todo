@@ -2,6 +2,7 @@
 import { TaskPriority } from "~/types/task";
 import type { Label, CreateTaskForm, Task } from "~/types/task";
 import { watch } from "vue";
+import { useTasks } from "~/composables/useTasks";
 
 interface Props {
   availableLabels: Label[];
@@ -40,10 +41,8 @@ watch(
         is_completed: false,
         labels: [],
       };
-
       return;
     }
-
     newTask.value = {
       title: task.title || "",
       description: task.description || "",
@@ -88,23 +87,7 @@ const labelItems = computed(() => {
 
 const toast = useToast();
 
-const getRequestConfig = () => {
-  const task = props.taskToEdit;
-
-  if (isEditMode.value && task) {
-    return {
-      url: `/api/tasks/${task.id}`,
-      method: "PATCH" as const,
-      isEditing: true,
-    };
-  }
-
-  return {
-    url: "/api/tasks",
-    method: "POST" as const,
-    isEditing: false,
-  };
-};
+const { addTask, updateTask } = useTasks();
 
 const handleSuccess = (isEditing: boolean) => {
   toast.add({
@@ -124,10 +107,8 @@ const handleSuccess = (isEditing: boolean) => {
       is_completed: false,
       labels: [],
     };
-
     return;
   }
-
   emit("updated");
 };
 
@@ -143,16 +124,18 @@ const handleError = (error: any, isEditing: boolean) => {
 
 const createOrUpdateTask = async () => {
   isLoading.value = true;
-
-  const { url, method, isEditing } = getRequestConfig();
-
-  const { error, pending } = await useSanctumFetch(url, {
-    method,
-    body: newTask.value,
-  });
-
-  error.value ? handleError(error.value, isEditing) : handleSuccess(isEditing);
-
+  const isEditing = isEditMode.value && props.taskToEdit;
+  try {
+    if (isEditing && props.taskToEdit) {
+      await updateTask(props.taskToEdit.id, newTask.value as any);
+      handleSuccess(true);
+    } else {
+      await addTask(newTask.value as any);
+      handleSuccess(false);
+    }
+  } catch (error: any) {
+    handleError(error, !!isEditing);
+  }
   isLoading.value = false;
 };
 </script>
