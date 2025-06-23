@@ -43,7 +43,7 @@ const handleSuccess = () => {
 const handleError = (error: any) => {
   toast.add({
     title: "Error",
-    description: error?.data?.message || "Failed to create task",
+    description: error,
     color: "error",
   });
 };

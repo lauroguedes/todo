@@ -34,7 +34,7 @@ const handleEditTask = (task: Task) => {
 const handleError = (error: string) => {
   toast.add({
     title: "Error",
-    description: error || "Operation Failed",
+    description: error,
     color: "error",
   });
 };

@@ -29,27 +29,11 @@ const editTask = (task: Task) => {
 };
 
 const toggleTaskCompletion = async (task: Task) => {
-  try {
-    emit("toggleCompletion", task);
-  } catch (e) {
-    toast.add({
-      title: "Error",
-      description: "Failed to update task",
-      color: "error",
-    });
-  }
+  emit("toggleCompletion", task);
 };
 
 const deleteTask = async (id: Task["id"]) => {
-  try {
-    emit("delete", id);
-  } catch (e) {
-    toast.add({
-      title: "Error",
-      description: "Failed to delete task",
-      color: "error",
-    });
-  }
+  emit("delete", id);
 };
 </script>
 

@@ -62,7 +62,7 @@ const handleSuccess = () => {
 const handleError = (error: any) => {
   toast.add({
     title: "Error",
-    description: error?.data?.message || "Failed to update task",
+    description: error,
     color: "error",
   });
 };
