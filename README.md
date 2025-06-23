@@ -2,6 +2,12 @@
 
 This project is the front-end portion of a technical assessment for a Software Engineer position. It demonstrates proficiency in building a modern, maintainable, and user-friendly task management interface using Nuxt 3 and related technologies.
 
+
+
+https://github.com/user-attachments/assets/a9de07bd-8d23-4d1b-a8bf-460286819ba0
+
+
+
 ## Project Purpose
 
 This repository implements the user interface for a Todo application as part of a technical assessment. The focus is on front-end architecture, component design, and integration with a backend API (assumed to be provided separately).
