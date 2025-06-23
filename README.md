@@ -30,6 +30,7 @@ This repository implements the user interface for a Todo application as part of 
   - Built with Nuxt 3, Vue 3, TypeScript.
   - Modular component structure (`TaskCard`, `TaskList`, `TaskCreateForm`).
   - State and API management using Nuxt composables and `useSanctumFetch`.
+  - **State Management:** Global state is managed using Nuxt 3's built-in `useState` composable, providing a simple and efficient solution for sharing state (such as the task list) across components without the need for an external library.
   - CSS via Tailwind and Nuxt UI for rapid, consistent styling.
   - Code organization for scalability and maintainability.
 
