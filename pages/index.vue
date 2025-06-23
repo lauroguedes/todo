@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Task, Label } from "~/types/task";
+import { useTasks } from "~/composables/useTasks";
 
 definePageMeta({
   layout: "app",
@@ -12,13 +13,22 @@ const { data: labelsData } = useSanctumFetch<{ data: Label[] }>("/api/labels");
 const availableLabels = computed<Label[]>(() => labelsData.value?.data || []);
 const taskToEdit = ref<Task | null>(null);
 
+// Use global tasks composable
 const {
-  data: tasksData,
-  pending,
+  tasks,
+  loading,
   error,
-  refresh,
-} = useSanctumFetch<{ data: Task[] }>("/api/tasks");
-const tasks = computed<Task[]>(() => tasksData.value?.data || []);
+  fetchTasks,
+  addTask,
+  updateTask,
+  deleteTask: removeTask,
+  toggleTaskCompletion,
+  createSubtask,
+} = useTasks();
+
+onMounted(() => {
+  fetchTasks();
+});
 
 const handleEditTask = (task: Task) => {
   taskToEdit.value = task;
@@ -38,60 +48,47 @@ const handleSuccess = (message: string) => {
     title: "Success",
     description: message,
   });
-
-  refresh();
 };
 
 const resetForm = () => {
   taskToEdit.value = null;
-  refresh();
 };
 
-const toggleTaskCompletion = async (task: Task) => {
-  const { error } = await useSanctumFetch(`/api/tasks/${task.id}`, {
-    method: "PATCH",
-    body: {
-      is_completed: !task.is_completed,
-    },
-  });
-
-  error.value
-    ? handleError(error.value?.data?.message || "Operation Failed")
-    : handleSuccess(
-        `Task ${task.title} was ${
-          task.is_completed ? "marked" : "unmarked"
-        } as completed`
-      );
+const handleToggleTaskCompletion = async (task: Task) => {
+  try {
+    await toggleTaskCompletion(task);
+    handleSuccess(
+      `Task ${task.title} was ${
+        task.is_completed ? "unmarked" : "marked"
+      } as completed`
+    );
+  } catch (e: any) {
+    handleError(e);
+  }
 };
 
-const deleteTask = async (id: Task["id"]) => {
-  const { error } = await useSanctumFetch(`/api/tasks/${id}`, {
-    method: "DELETE",
-  });
-
-  error.value
-    ? handleError(error.value?.data?.message || "Operation Failed")
-    : handleSuccess("Task deleted successfully");
+const handleDeleteTask = async (id: Task["id"]) => {
+  try {
+    await removeTask(id);
+    handleSuccess("Task deleted successfully");
+  } catch (e: any) {
+    handleError(e);
+  }
 };
 
-const createSubtask = async ({
+const handleCreateSubtask = async ({
   parentId,
   title,
 }: {
   parentId: number;
   title: string;
 }) => {
-  const { error } = await useSanctumFetch("/api/tasks", {
-    method: "POST",
-    body: {
-      title,
-      parent_id: parentId,
-    },
-  });
-
-  error.value
-    ? handleError(error.value?.data?.message || "Operation Failed")
-    : handleSuccess(`Subtask ${title} was created successfully`);
+  try {
+    await createSubtask(parentId, title);
+    handleSuccess(`Subtask ${title} was created successfully`);
+  } catch (e: any) {
+    handleError(e);
+  }
 };
 </script>
 
@@ -112,11 +109,11 @@ const createSubtask = async ({
     <TasksTaskCreateForm
       :available-labels="availableLabels"
       :task-to-edit="taskToEdit"
-      @created="refresh"
+      @created="fetchTasks"
       @updated="resetForm"
     />
 
-    <div v-if="pending" class="flex justify-center items-center py-12">
+    <div v-if="loading" class="flex justify-center items-center py-12">
       <UIcon
         name="i-lucide-loader-2"
         class="animate-spin text-4xl text-primary"
@@ -126,7 +123,7 @@ const createSubtask = async ({
     <UAlert
       v-else-if="error"
       title="Error"
-      description="Failed to load tasks. Please try again."
+      :description="error"
       color="error"
       icon="i-lucide-alert-circle"
     />
@@ -134,10 +131,10 @@ const createSubtask = async ({
     <TasksTaskList
       v-else
       :tasks="tasks"
-      @toggle-completion="toggleTaskCompletion"
-      @delete="deleteTask"
+      @toggle-completion="handleToggleTaskCompletion"
+      @delete="handleDeleteTask"
       @edit="handleEditTask"
-      @create-subtask="createSubtask"
+      @create-subtask="handleCreateSubtask"
     />
   </div>
 </template>
