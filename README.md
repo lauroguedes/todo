@@ -50,7 +50,7 @@ Make sure to install dependencies:
 
 ```bash
 # npm
-npm install
+npm install && npm run dev
 
 # pnpm
 pnpm install
