@@ -14,22 +14,17 @@ const { data: labelsData } = useSanctumFetch<{ data: Label[] }>("/api/labels");
 const availableLabels = computed<Label[]>(() => labelsData.value?.data || []);
 const taskToEdit = ref<Task | null>(null);
 
-// Use global tasks composable
 const {
   tasks,
   loading,
   error,
   fetchTasks,
-  addTask,
-  updateTask,
   deleteTask: removeTask,
   toggleTaskCompletion,
   createSubtask,
 } = useTasks();
 
-onMounted(() => {
-  fetchTasks();
-});
+fetchTasks();
 
 const handleEditTask = (task: Task) => {
   taskToEdit.value = task;

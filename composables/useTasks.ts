@@ -2,18 +2,17 @@ import { ref, computed } from "vue";
 import type { Task } from "~/types/task";
 
 export const useTasks = () => {
-  // Global state for tasks
   const tasks = useState<Task[]>("tasks", () => []);
   const loading = ref(false);
   const error = ref<string | null>(null);
 
-  // Fetch tasks from server and set state
   const fetchTasks = async () => {
     loading.value = true;
     error.value = null;
     const { data, error: fetchError } = await useSanctumFetch<{ data: Task[] }>(
       "/api/tasks"
     );
+
     if (fetchError.value) {
       error.value =
         (fetchError.value as any)?.data?.message || "Failed to fetch tasks";
@@ -23,7 +22,6 @@ export const useTasks = () => {
     loading.value = false;
   };
 
-  // Helper: recursively find and update a task by id
   function updateTaskInTree(
     tasksArr: Task[],
     id: number,
@@ -41,7 +39,6 @@ export const useTasks = () => {
     return false;
   }
 
-  // Helper: recursively find and delete a task by id
   function deleteTaskInTree(tasksArr: Task[], id: number): boolean {
     const idx = tasksArr.findIndex((t) => t.id === id);
     if (idx !== -1) {
@@ -56,7 +53,6 @@ export const useTasks = () => {
     return false;
   }
 
-  // Helper: recursively find a parent by id and add a child
   function addSubtaskInTree(
     tasksArr: Task[],
     parentId: number,
@@ -75,7 +71,6 @@ export const useTasks = () => {
     return false;
   }
 
-  // Add a new task (top-level only)
   const addTask = async (taskData: Partial<Task>) => {
     const { data, error: addError } = await useSanctumFetch<{ data: Task }>(
       "/api/tasks",
@@ -88,7 +83,6 @@ export const useTasks = () => {
       throw (addError.value as any)?.data?.message || "Failed to add task";
     }
     if (data.value && data.value.data) {
-      // If parent_id is present, add as subtask
       if ((taskData as any).parent_id) {
         addSubtaskInTree(
           tasks.value,
@@ -101,7 +95,6 @@ export const useTasks = () => {
     }
   };
 
-  // Update an existing task (deep)
   const updateTask = async (id: number, updates: Partial<Task>) => {
     const { data, error: updateError } = await useSanctumFetch<{ data: Task }>(
       `/api/tasks/${id}`,
@@ -115,14 +108,13 @@ export const useTasks = () => {
         (updateError.value as any)?.data?.message || "Failed to update task"
       );
     }
-    if (data.value?.data) {
+    if (data.value && data.value.data) {
       updateTaskInTree(tasks.value, id, (task) => {
         Object.assign(task, data.value.data);
       });
     }
   };
 
-  // Delete a task (deep)
   const deleteTask = async (id: number) => {
     const { error: deleteError } = await useSanctumFetch(`/api/tasks/${id}`, {
       method: "DELETE",
@@ -135,12 +127,10 @@ export const useTasks = () => {
     deleteTaskInTree(tasks.value, id);
   };
 
-  // Toggle completion (deep)
   const toggleTaskCompletion = async (task: Task) => {
     await updateTask(task.id, { is_completed: !task.is_completed });
   };
 
-  // Create subtask (deep)
   const createSubtask = async (parentId: number, title: string) => {
     const { data, error: subtaskError } = await useSanctumFetch<{ data: Task }>(
       "/api/tasks",
@@ -154,7 +144,7 @@ export const useTasks = () => {
         (subtaskError.value as any)?.data?.message || "Failed to create subtask"
       );
     }
-    if (data.value?.data) {
+    if (data.value && data.value.data) {
       addSubtaskInTree(tasks.value, parentId, data.value.data);
     }
   };
